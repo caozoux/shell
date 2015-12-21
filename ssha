@@ -1,0 +1,108 @@
+#!/bin/bash
+
+#=====================reveiw template variable=================================
+
+function ssha_help() 
+{
+	echo "-Y:  ssh -y server"
+	echo "[12345]: ssh -y pek-lpgbuild[1234].wrs.com"
+	echo "nfs:  login vlm nfs server"
+	echo "rrme:  send review email to myself"
+	echo "emailrr:  send review email to review email list"
+	echo "git:  login git server"
+	echo "rp:  create review template"
+}
+
+function patch_format() 
+{
+	/fslink/ti/kernel-3.14.x/scripts/checkpatch.pl *.patch 3>&1 | grep total |
+	while read line 
+	do
+		result=`echo $line | cut -b 8`
+		if [ "$result" = "0" ]
+		then
+			:
+		else
+			echo "patch format error, please modify it"
+			echo $line
+			exit
+		fi
+	done
+}
+
+review_manage="xulin.sun@windriver.com"
+function choose_reviewer()
+{
+	#read -p "whitch review you want(1~3): \n 1 kexin.hao@windriver.com \n 2xulin.sun@windriver.com\n 3 zumeng.chen@windriver.com\n 4 lu.jiang@windriver.com\n 5 yanjiang.jin@windriver.com\n" answer 
+	echo -e  "whitch review you want(1~5): \n 1: kexin.hao@windriver.com \n 2: xulin.sun@windriver.com\n 3: zumeng.chen@windriver.com\n 4: lu.jiang@windriver.com\n 5: yanjiang.jin@windriver.com\n"
+	read -p "input:"  answer
+	if [ $answer = "1" ]
+	then
+		review_manage="kexin.hao@windriver.com"
+	elif [ $answer == "2" ]
+	then
+		review_manage="xulin.sun@windriver.com"
+	elif [ $answer == "3" ]
+	then
+		review_manage="zumeng.chen@windriver.com"
+	elif [ $answer == "4" ]
+	then
+		review_manage="lu.jiang@windriver.com"
+	elif [ $answer == "5" ]
+	then
+		review_manage="yanjiang.jin@windriver.com"
+	else
+		echo "please input 1~5"
+		exit
+	fi
+	
+}
+
+if [ $# != 1 ]
+then
+	#sshpass -p '3333czou' ssh czou@pek-lpgbuild1.wrs.com
+	sshpass -p '3333czou' ssh czou@pek-lpggp4
+else
+	if [ $1 == "-Y" ]
+	then
+		sshpass -p '3333czou' ssh -Y czou@pek-lpgbuild1.wrs.com
+	elif [ $1 == "nfs" ]
+	then
+		echo ""
+		echo "========================================="
+		echo "nfs path is "/export/pxeboot/vlm-boards/""
+		echo "========================================="
+		echo ""
+		sshpass -p '3333czou' ssh czou@128.224.165.20
+	elif [ $1 == "vnc" ]
+	then 
+		ssh -D 9195 -qtfnN czou@ala-tuxlab.wrs.com
+	elif [ $1 == "rrme" ]
+	then 
+		patch_format
+		git send-email --no-chain-reply-to --to cao.zou@windriver.com rr *.patch
+	elif [ $1 == "emailrr" ]
+	then 
+		patch_format
+		choose_reviewer
+		echo "git send-email --no-chain-reply-to --to $review_manage --cc yue.tao@windriver.com -cc lpd-eng-rr@windriver.com rr *.patch"
+		read -p "you sure rr review(y/n): $review_manage ?" answer 
+		if [ $answer = "y" ]
+		then
+			#echo "git send-email --no-chain-reply-to --to $review_manage --cc yue.tao@windriver.com -cc lpd-eng-rr@windriver.com rr *.patch"
+			git send-email --no-chain-reply-to --to $review_manage --cc yue.tao@windriver.com -cc lpd-eng-rr@windriver.com rr *.patch
+		fi
+	elif [ $1 == "rp" ]
+	then 
+		generate_review
+	elif [ $1 == "git" ]
+	then 
+		sshpass -p '3333czou' ssh czou@pek-git.wrs.com
+	elif [ $1 == "-h" | $1 == "help" ]
+	then 
+		ssha_help
+	else 
+		sshpass -p '3333czou' ssh czou@pek-lpgbuild$1.wrs.com
+		echo "czou@pek-lpgbuild$1.wrs.com"
+	fi
+fi

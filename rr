@@ -1,0 +1,65 @@
+Subject: Review Request
+
+Summary:
+
+Tech Review:
+Gatekeeper: Yue
+Lockdown Approval (if needed):
+Branch Tag: master
+IP Statement (form link or license statement):
+Parent Template (where applicable):
+
+-------------------------------------
+Impacted area             Impact y/n
+-------------------       -----------
+docs/tech-pubs                 n
+tests                          n
+build system                   n
+host dependencies              n
+RPM/packaging                  n
+toolchain                      n
+kernel code                    n
+user code                      n
+configuration files            n
+target configuration           n
+Other                          n
+Applicable to Yocto/upstream   n
+
+
+Comments (indicate scope for each "y" above):
+--------------------------------------------
+
+Added Files:
+------------
+None.
+
+Removed Files:
+--------------
+None.
+
+Remaining Changes (diffstat):
+-----------------------------
+
+Testing Applicable to:
+----------------------
+
+Testing Commands:
+-----------------
+
+Testing, Expected Results:
+--------------------------
+
+Conditions of submission:
+-------------------------
+
+
+Arch    built      boot     boardname
+-------------------------------------
+MIPS      n         n
+MIPS64    n         n
+MIPS64n32 n         n
+ARM       n         n
+x86       n         n
+x86_64    n         n
+PPC       n         n
+SPARC63   n         n

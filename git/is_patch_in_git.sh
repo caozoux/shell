@@ -34,6 +34,7 @@ do
 
 	pch_commit_name=`sed -n '4p' ${patch_name[$cnt]} | cut -d ] -f 2`
 	#echo "try to find $pch_commit_name"
+	echo "sed  -n "/${pch_commit_name}/p" $2"
 	ret=`sed  -n "/${pch_commit_name}/p" $2`
 	echo $ret
 	if [ $ret="" ]
