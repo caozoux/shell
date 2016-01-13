@@ -58,6 +58,98 @@ function choose_reviewer()
 	
 }
 
+function get_context_line()
+{
+	line=`cat $1 | grep -n "$2" | sed -n 1p | cut -d : -f 1`
+	return $line
+}
+
+function generate_review()
+{
+	REVIEW_TITLE1=" [WRL8]"
+	rr_name=$2
+	patch_cnt=`ls $1/*.patch | wc -l`
+	context_line=6
+
+	#check the title lines of patch
+	if [ "$patch_cnt" = "1" ]
+	then
+
+		patch_name=`echo $1/*.patch`
+    	title1=`sed -n '4p' $patch_name  | cut -b 18-`
+    	title2=`sed -n '5p' $patch_name`
+
+		if [ "$title2" == "" ]
+		then
+			title=$title1
+		else
+			title=$title1$title2
+			context_line=`expr $context_line + 1`
+			echo "tile lines is 2"
+		fi
+
+		#check the format for patch
+		format=`cat $patch_name | grep Issue\:`
+
+		if [ "$format" == "" ]
+		then
+			:
+		else
+			context_line=`expr $context_line + 2`
+			echo "format-> Issue"
+		fi
+
+		#get the patch commit context
+		echo $context_line
+		context_end=`sed -n ''$context_line',\$p' $patch_name | grep -n "^\$" | sed -n 1p | cut -d : -f 1`
+		context_end=`expr $context_line + $context_end`
+		context_end=`expr $context_end - 1`
+		context=`sed -n ''$context_line','$context_end'p' $patch_name`
+		rr_title=$REVIEW_TITLE1:$title
+
+		sed -i "1 s/$/$rr_title/" rr
+		sed -i "3 s/$/$title/" rr
+
+		get_context_line $rr_name "Comments "
+		commit_line=$?
+
+		#write it to rr commit
+		if [ "$commit_line" != "0" ]
+		then
+			commit_line=`expr $commit_line + 2`
+			#sed -i "N;${commit_line}a${context}" $rr_name
+			context=`echo $context | sed 'N;s/\n/\\n/g'`
+			sed -i "${commit_line}a $context\n" $rr_name
+		fi
+
+		read -p "you review is kernel(Y/n): $review_manage ?" answer 
+		
+		if [ "$answer" = "n" ]
+		then
+			read -p "you review is configuration(Y/n): $review_manage ?" answer 
+			if [ "$answer" = "n" ]
+			then
+				echo "sorry, no your choose, exit!"
+				exit
+			else
+				sed -i "23 s/n$/y/" $rr_name
+			fi
+		else
+			sed -i "21 s/n$/y/" $rr_name
+		fi
+
+		read -p "you review is bsp?" answer
+		if [ "$answer" = "" ]
+		then
+			echo "bsp can't be null"
+			exit
+		else
+			sed -i "63 s/ n/ y/" $rr_name
+			sed -i "63 s/$/    $answer/" $rr_name
+		fi
+	fi
+}
+
 if [ $# != 1 ]
 then
 	#sshpass -p '3333czou' ssh czou@pek-lpgbuild1.wrs.com
@@ -94,7 +186,8 @@ else
 		fi
 	elif [ $1 == "rp" ]
 	then 
-		generate_review
+		cp ~/github/shell/rr . -f
+		generate_review . rr
 	elif [ $1 == "git" ]
 	then 
 		sshpass -p '3333czou' ssh czou@pek-git.wrs.com
