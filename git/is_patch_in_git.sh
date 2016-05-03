@@ -25,6 +25,7 @@ else
 	echo "error: $2 isn't file"
 fi
 
+mkdir remove_patches
 cnt=0
 #grep -n "Upstream" -R $1 | cut -d : -f 1 | while read line 
 ls $1 | cut -d : -f 1 | while read line 
@@ -37,11 +38,12 @@ do
 	echo "sed  -n "/${pch_commit_name}/p" $2"
 	ret=`sed  -n "/${pch_commit_name}/p" $2`
 	echo $ret
-	if [ $ret="" ]
+	if [ "$ret" == "" ]
 	then
 		:
 	else
 		echo "   find ${patch_name[$cnt]} $pch_commit_name in upstream"
+		mv ${patch_name[$cnt]} remove_patches
 	fi
 	cnt=`expr $cnt + 1`
 done
