@@ -11,6 +11,7 @@ function ssha_help()
 	echo "emailrr:  send review email to review email list"
 	echo "git:  login git server"
 	echo "rp:  create review template"
+	echo "mb:  our build server"
 }
 
 function patch_format() 
@@ -62,6 +63,37 @@ function get_context_line()
 {
 	line=`cat $1 | grep -n "$2" | sed -n 1p | cut -d : -f 1`
 	return $line
+}
+
+function generate_reviewtemplate()
+{
+	rr_name="rr"
+	cp ~/github/shell/rr . -f
+	read -p "you review is kernel(Y/n): $review_manage ?" answer 
+	
+	if [ "$answer" = "n" ]
+	then
+		read -p "you review is configuration(Y/n): $review_manage ?" answer 
+		if [ "$answer" = "n" ]
+		then
+			echo "sorry, no your choose, exit!"
+			exit
+		else
+			sed -i "23 s/n$/y/" $rr_name
+		fi
+	else
+		sed -i "21 s/n$/y/" $rr_name
+	fi
+
+	read -p "you review is bsp?" answer
+	if [ "$answer" = "" ]
+	then
+		echo "bsp can't be null"
+		exit
+	else
+		sed -i "63 s/ n/ y/" $rr_name
+		sed -i "63 s/$/    $answer/" $rr_name
+	fi
 }
 
 function generate_review()
@@ -157,7 +189,8 @@ then
 else
 	if [ $1 == "-Y" ]
 	then
-		sshpass -p '3333czou' ssh -Y czou@pek-lpgbuild1.wrs.com
+		#sshpass -p '3333czou' ssh -Y czou@pek-lpgbuild1.wrs.com
+		sshpass -p '3333czou' ssh -Y czou@pek-lpgtest4.wrs.com
 	elif [ $1 == "nfs" ]
 	then
 		echo ""
@@ -191,6 +224,9 @@ else
 	elif [ $1 == "git" ]
 	then 
 		sshpass -p '3333czou' ssh czou@pek-git.wrs.com
+	elif [ $1 == "mb" ]
+	then 
+		sshpass -p '3333czou' ssh czou@pek-lpgbuild6
 	elif [ $1 == "-h" | $1 == "help" ]
 	then 
 		ssha_help
