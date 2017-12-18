@@ -1,0 +1,24 @@
+#!/bin/sh
+
+primary_display=""
+extern_display=""
+
+primary_display=`xrandr -q | grep " connected" | cut -d " " -f 1 | sed -n 1p`
+extern_display=`xrandr -q | grep " connected" | cut -d " " -f 1 | sed -n 2p`
+current_display=`xrandr -q | grep "0+0+0" | cut -d " " -f 1 | sed -n 1p`
+
+echo $primary_display
+echo $extern_display
+echo $current_display
+
+if [ "$current_display" = "$primary_display" ]
+then
+	xrandr --output $extern_display --left-of $primary_display
+	python3.4 aa.py  right &&  xdotool  click 1
+	echo aa
+else
+	xrandr --output $primary_display --left-of $extern_display
+	python3.4 aa.py  left &&  xdotool  click 1
+	echo bb
+fi
+
