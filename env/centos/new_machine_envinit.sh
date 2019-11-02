@@ -19,7 +19,7 @@ git clone --branch vimwiki https://github.com/caozoux/vim.git ~/github/vim
 ln -s ~/github/vim/vimrc ~/.vimrc
 ln -s ~/github/vim/.vim ~/
 mkdir ~/.vim/bundle
-git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/undle.vim
+git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 git clone https://github.com/vim/vim.git ~/github/vim_src
 
 build_vim8
