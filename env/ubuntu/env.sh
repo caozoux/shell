@@ -1,0 +1,1 @@
+synclient AreaBottomEdge=100
