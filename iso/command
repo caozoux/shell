@@ -1,0 +1,4 @@
+genisoimage -e images/efiboot.img  -no-emul-boot -T -J -R -c boot.catalog -hide boot.catalog -V "CentOS 7 aarch64"  -o ~/myiso.iso .
+createrepo yum -g ~/c7-minimal-x86_64-comps.xml
+mksquashfs squashfs-root aa.img
+
