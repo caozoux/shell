@@ -1,0 +1,10 @@
+#!/bin/bash
+
+x_size=`xdotool getmouselocation | awk '{print $1}' | cut -b 3-`
+if [ $x_size -lt 2000 ]
+then
+	xdotool mousemove 3000 500 && xdotool click 1
+else
+	xdotool mousemove 200 500 && xdotool click 1
+fi
+
