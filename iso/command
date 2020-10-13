@@ -2,3 +2,6 @@ genisoimage -e images/efiboot.img  -no-emul-boot -T -J -R -c boot.catalog -hide 
 createrepo yum -g ~/c7-minimal-x86_64-comps.xml
 mksquashfs squashfs-root aa.img
 
+genisoimage -e images/efiboot.img  -no-emul-boot -T -J -R -c AliOS_BuildTag -hide AliOS_BuildTag -V "AliOS 7 aarch64"  -o  /mnt/nvme0n1/zc/Downloads/arm64/iso/AliOS7u2-aarch64-ampere6.iso  .
+
+
