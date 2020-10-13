@@ -1,5 +1,6 @@
 genisoimage -e images/efiboot.img  -no-emul-boot -T -J -R -c boot.catalog -hide boot.catalog -V "CentOS 7 aarch64"  -o ~/myiso.iso .
 createrepo yum -g ~/c7-minimal-x86_64-comps.xml
+dracut --kver="" --add-driver="megaraid_sas sr_mod dm-log dm-mod dm-region-hash dm-mirror  scsi_transport_fc cramfs squashfs iscsi_tcp floppy edd iscsi_ibft raid0  raid1 raid5 raid6 raid456  raid10  linear  dm-snapshot dm-multipath  dm-round-robin dm-crypt  sha256  lrw xts sunrppc"
 mksquashfs squashfs-root aa.img
 
 genisoimage -e images/efiboot.img  -no-emul-boot -T -J -R -c AliOS_BuildTag -hide AliOS_BuildTag -V "AliOS 7 aarch64"  -o  /mnt/nvme0n1/zc/Downloads/arm64/iso/AliOS7u2-aarch64-ampere6.iso  .
