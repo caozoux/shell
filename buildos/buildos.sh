@@ -32,7 +32,7 @@ cp /etc/motd $buildos_root/etc/motd
 
 mount -o bind /dev $buildos_root/dev
 mount -o bind /proc $buildos_root/proc
-chroot $buildos_root  /bin/yum -y install util-linux kernel
+chroot $buildos_root  /bin/yum -y install util-linux kernel grub2-tools
 chroot $buildos_root  /usr/bin/yum clean all
 #chroot $buildos_root  /usr/bin/yum makecache
 umount $buildos_root/dev
