@@ -1,13 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 
 curdir=`pwd`
 myspace=$curdir
 buildos_root=$curdir/buildos
 
+function centos_env_inst()
+{
+	touch $buildos_root/etc/sysconfig/network
+	chroot $buildos_root  /bin/yum -y install  grub2-tools net-tools kernel kernel-devel kernel-headers
+	mkdir $buildos_root  /boot/grub2
+	chroot $buildos_root  grub2-mkconfig > /boot/grub2/grub.cfg
+}
+
 umount $buildos_root/dev
 umount $buildos_root/proc
 rm -rf  $buildos_root     > /dev/null
-rm -rf  $myspace/*.rpm*  > /dev/null
 [[ -d $buildos_root ]] && rm -fr $buildos_root && mkdir -p $buildos_root
 
 rpm --root $buildos_root --initdb
@@ -32,9 +39,10 @@ cp /etc/motd $buildos_root/etc/motd
 
 mount -o bind /dev $buildos_root/dev
 mount -o bind /proc $buildos_root/proc
-chroot $buildos_root  /bin/yum -y install util-linux kernel grub2-tools
+chroot $buildos_root  /bin/yum -y groupinstall "Minimal Install"
+centos_env_inst
 chroot $buildos_root  /usr/bin/yum clean all
-#chroot $buildos_root  /usr/bin/yum makecache
 umount $buildos_root/dev
 umount $buildos_root/proc
+XZ_OPT="--threads=0 -9 --verbose"  tar -cJpf ../baseos.tar.gz *
 
