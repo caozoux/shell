@@ -8,7 +8,10 @@ function centos_env_inst()
 {
 	touch $buildos_root/etc/sysconfig/network
 	chroot $buildos_root  /bin/yum -y install  grub2-tools net-tools kernel kernel-devel kernel-headers
-	mkdir $buildos_root  /boot/grub2
+	#mkdir $buildos_root  /boot/grub2
+
+	#grub2 lagcy boot
+	chroot $buildos_root  /bin/yum -y install  grub2-pc grub-common
 	chroot $buildos_root  grub2-mkconfig > /boot/grub2/grub.cfg
 }
 
@@ -44,5 +47,7 @@ centos_env_inst
 chroot $buildos_root  /usr/bin/yum clean all
 umount $buildos_root/dev
 umount $buildos_root/proc
+cd $buildos_root
 XZ_OPT="--threads=0 -9 --verbose"  tar -cJpf ../baseos.tar.gz *
+cd -
 
