@@ -1,10 +1,12 @@
 #!/bin/sh
 
-#set -x
+set -x
 #the image file of OS tar image
 IS_EIF=0
+MODE=""
 BASEOS_TAR_IMAGE=""
 TIME=`date "+%Y%m%d_%H%M"`
+QEMU_IMG="${TIME}_qemu.img"
 
 #yum --installroot=/mnt install gcc-6-repo.noarch -y
 function die() {
@@ -13,30 +15,61 @@ function die() {
 	#function_body
 }
 
-function qcow_create_legacy() {
+function raw_create_legacy() {
 	#qemu-img snapshot ${TIME}_rootfs.qcow2 -c base
-	qemu-img create -f qcow2 ${TIME}_rootfs.qcow2  20G
-	modprobe nbd max_part=63
-	qemu-nbd -c /dev/nbd0 ${TIME}_rootfs.qcow2
-	lsblk
+	qemu-img create -f raw $QEMU_IMG 20G
+	mount -o loop $QEMU_IMG
 	#format fdisk partation
-echo "n
+echo "o
+n
 
 
 
 +1024M
+a
 n
 
 
 
 
+
+w
+" | fdisk $QEMU_IMG
+	kpartx -av $QEMU_IMG
+	mkfs.ext2 /dev/mapper/loop0p1
+	mkfs.ext4 /dev/mapper/loop0p2
+
+	mount  /dev/mapper/loop0p2 /mnt
+	mkdir /mnt/boot
+	mount /dev/mapper/loop0p1 /mnt/boot
+	grub2-install --no-floppy  --target=i386-pc --root-directory=/mnt/ /dev/loop0
+}
+
+function qcow_create_legacy() {
+	qemu-img create -f qcow2 $QEMU_IMG 20G
+	modprobe nbd max_part=63
+	qemu-nbd -c /dev/nbd0 $QEMU_IMG
+	lsblk
+	#format fdisk partation
+echo "o
+n
+
+
+2048
++1024M
+a
+n
+
+
+1050623
+
+
 w
 " | fdisk /dev/nbd0
 
-
 	#format disk filesystem
 	mkfs.ext4 /dev/nbd0p2
-	mkfs.fat /dev/nbd0p1
+	mkfs.ext2 /dev/nbd0p1
 
 	mount /dev/nbd0p2 /mnt
 	mkdir /mnt/boot
@@ -44,10 +77,9 @@ w
 }
 
 function qcow_create_efi() {
-	#qemu-img snapshot ${TIME}_rootfs.qcow2 -c base
-	qemu-img create -f qcow2 ${TIME}_rootfs.qcow2  20G
+	qemu-img create -f qcow2 $QEMU_IMG 20G
 	modprobe nbd max_part=63
-	qemu-nbd -c /dev/nbd0 ${TIME}_rootfs.qcow2
+	qemu-nbd -c /dev/nbd0 $QEMU_IMG
 	lsblk
 	#format fdisk partation
 echo "n
@@ -130,7 +162,7 @@ then
 	die "Error, not root access"
 fi
 
-while getopts ":hvt:e" opt
+while getopts ":hvt:em:" opt
 do
   case $opt in
 
@@ -145,6 +177,10 @@ do
 		IS_EIF=1
 		;;
 
+	m|mode     )
+		MODE=$OPTARG
+		;;
+
 	* )  echo -e "\n  Option does not exist : $OPTARG\n"
 		  usage; exit 1   ;;
 
@@ -154,39 +190,45 @@ shift $(($OPTIND-1))
 
 if [ "${BASEOS_TAR_IMAGE}" != "" ]
 then
-	if [ $IS_EIF -eq 1 ]
+	if [ "$MODE" == "raw" ]
 	then
-		qcow_create_efi
+		raw_create_legacy
+	elif [[ "$mode" == "qcow2" ]]; then
+		if [ $IS_EIF -eq 1 ]
+		then
+			qcow_create_efi
+		else
+			qcow_create_legacy
+		fi
 	else
-		qcow_create_legacy
+		echo "mode $MODE not support"
+		exit 1
 	fi
+
+	exit 1
 	tar -pxf ${BASEOS_TAR_IMAGE} -C /mnt
 	for f in proc sys dev ; do mount -o bind /$f /mnt/$f ; done
 
-	if [ $IS_EIF -eq 1 ]
+	if [ "$MODE" != "raw" ]
 	then
-cat << EOF | chroot /mnt
-grub2-mkconfig -o boot/efi/EFI/centos/grub.cfg
-exit
-EOF
-    else
-#sudo cp /mnt/usr/lib/grub/i386-pc/ /mnt/boot/grub2/ -rf
-#sudo grub2-install --target=i386-pc  --root-directory=/mnt/  /dev/nbd0p1
-cat << EOF | chroot /mnt
-grub2-mkconfig
-grub2-mkconfig -o boot/grub2/grub.cfg
-exit
-EOF
+		chroot /mnt /sbin/grub2-mkconfig -o boot/efi/EFI/centos/grub.cfg
+		if [ $IS_EIF -eq 1 ]
+		then
+			umount /mnt/boot/efi
+		fi
+		for f in proc sys dev ; do umount /mnt/$f ; done
+		umount /mnt/boot/
+		umount /mnt
+		qemu-nbd -d /dev/nbd0
+	else
+		chroot /mnt /sbin/grub2-mkconfig -o boot/grub2/grub.cfg
+		for f in proc sys dev ; do umount /mnt/$f ; done
+		umount /mnt/boot/
+		umount /mnt
+		kpartx -dv /dev/loop0
+		losetup -d /dev/loop0
 	fi
 
-	for f in proc sys dev ; do umount /mnt/$f ; done
-	if [ $IS_EIF -eq 1 ]
-	then
-		umount /mnt/boot/efi
-	fi
-	#umount /mnt/boot/
-	#umount /mnt
-	#sudo qemu-nbd -d /dev/nbd0
 	echo ""
 else
 	echo "error"

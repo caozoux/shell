@@ -7,12 +7,18 @@ buildos_root=$curdir/buildos
 function centos_env_inst()
 {
 	touch $buildos_root/etc/sysconfig/network
+	#chroot $buildos_root  /bin/yum -y groupinstal "Minimal Install"
 	chroot $buildos_root  /bin/yum -y install  grub2-tools net-tools kernel kernel-devel kernel-headers
 	#mkdir $buildos_root  /boot/grub2
 
 	#grub2 lagcy boot
 	chroot $buildos_root  /bin/yum -y install  grub2-pc grub-common
-	chroot $buildos_root  grub2-mkconfig > /boot/grub2/grub.cfg
+
+	chroot $buildos_root /bin/sed 's/SELINUX=enforcing/SELINUX=disabled/'
+
+	chroot $buildos_root /bin/systemctl disbale auditd
+	chroot $buildos_root /bin/systemctl  disable NetworkManager
+	chroot $buildos_root /bin/systemctl disable postfix
 }
 
 umount $buildos_root/dev
