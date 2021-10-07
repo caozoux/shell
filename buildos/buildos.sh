@@ -4,6 +4,13 @@ curdir=`pwd`
 myspace=$curdir
 buildos_root=$curdir/buildos
 
+function mini_os()
+{
+	systemctl disable rhel-dmesg
+	#pv6.conf.all.disable_ipv6=1
+	#net.ipv6.conf.default.disable_ipv6 = 1
+
+}
 function centos_env_inst()
 {
 	touch $buildos_root/etc/sysconfig/network

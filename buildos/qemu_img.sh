@@ -1,6 +1,6 @@
-#!/bin/sh
-
+#!/bin/bash
 set -x
+
 #the image file of OS tar image
 IS_EIF=0
 MODE=""
@@ -9,13 +9,15 @@ TIME=`date "+%Y%m%d_%H%M"`
 QEMU_IMG="${TIME}_qemu.img"
 
 #yum --installroot=/mnt install gcc-6-repo.noarch -y
-function die() {
+function die()
+{
 	echo $1
 	exit 1
 	#function_body
 }
 
-function raw_create_legacy() {
+function raw_create_legacy()
+{
 	#qemu-img snapshot ${TIME}_rootfs.qcow2 -c base
 	qemu-img create -f raw $QEMU_IMG 20G
 	mount -o loop $QEMU_IMG
@@ -141,6 +143,8 @@ function usage ()
     Options:
     -h|help       Display this message
     -v|version    Display script version
+    -e|uefi       use uefi boot mode
+    -m|mode       raw | qcow2
     -t|tarimage   install os tar image"
 
 }    # ----------  end of function usage  ----------
@@ -193,7 +197,7 @@ then
 	if [ "$MODE" == "raw" ]
 	then
 		raw_create_legacy
-	elif [[ "$mode" == "qcow2" ]]; then
+	elif [[ "$MODE" == "qcow2" ]]; then
 		if [ $IS_EIF -eq 1 ]
 		then
 			qcow_create_efi
@@ -205,7 +209,6 @@ then
 		exit 1
 	fi
 
-	exit 1
 	tar -pxf ${BASEOS_TAR_IMAGE} -C /mnt
 	for f in proc sys dev ; do mount -o bind /$f /mnt/$f ; done
 

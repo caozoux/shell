@@ -1,0 +1,1 @@
+./configure –enable-multibyte –enable-cscope –enable-fontset  –enable-perlinterp  –enable-perlinterp   --with-features=huge --enable-python3interp  --with-python3-config-dir=/usr/lib/python3.8/config-3.8-x86_64-linux-gnu/  --with-features=huge

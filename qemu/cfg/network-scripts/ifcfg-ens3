@@ -1,0 +1,9 @@
+NAME="oob_net0"
+DEVICE="oob_net0"
+NM_CONTROLLED="yes"
+PEERDNS="yes"
+ONBOOT="yes"
+BOOTPROTO="static"
+TYPE=Ethernet
+IPADDR=10.177.137.183
+NETMASK=255.255.255.192
