@@ -16,6 +16,29 @@ function die()
 	#function_body
 }
 
+KERNEL=""
+INITRAMFS=""
+BOOTUUID="(hd0,msdos1)"
+ROOTUUID=""
+RESCUEKERNEL=""
+RESCUEINITRAMFS=""
+function legacy_grub() {
+	cp ./grub2/* /mnt/boot/grub2 -rf
+	INITRAMFS=`ls /mnt/boot/ | grep initramfs | grep -v rescue`
+	KERNEL=`ls /mnt/boot/ | grep vmlinuz | grep -v rescue`
+	RESCUEINITRAMFS=`ls /mnt/boot/ | grep initramfs | grep rescue`
+	RESCUEKERNEL=`ls /mnt/boot/ | grep vmlinuz | grep rescue`
+	BOOTUUID=""
+	ROOTUUID="\/dev\/vda2"
+	sed -i "s/INITRAMFS/${INITRAMFS}/g" /mnt/boot/grub2/grub.cfg
+	sed -i "s/KERNEL/${KERNEL}/g" /mnt/boot/grub2/grub.cfg
+	sed -i "s/RESCUEKERNEL/${RESCUEKERNEL}/g" /mnt/boot/grub2/grub.cfg
+	sed -i "s/RESCUEINITRAMFS/${RESCUEINITRAMFS}/g" /mnt/boot/grub2/grub.cfg
+	sed -i "s/BOOTUUID/${BOOTUUID}/g" /mnt/boot/grub2/grub.cfg
+	sed -i "s/ROOTUUID/${ROOTUUID}/g" /mnt/boot/grub2/grub.cfg
+	#function_body
+}
+
 function raw_create_legacy()
 {
 	#qemu-img snapshot ${TIME}_rootfs.qcow2 -c base
@@ -44,7 +67,8 @@ w
 	mount  /dev/mapper/loop0p2 /mnt
 	mkdir /mnt/boot
 	mount /dev/mapper/loop0p1 /mnt/boot
-	grub2-install --no-floppy  --target=i386-pc --root-directory=/mnt/ /dev/loop0
+	#grub2-install --no-floppy  --target=i386-pc --root-directory=/mnt/ /dev/loop0
+	grub-install --no-floppy  --target=i386-pc --root-directory=/mnt/ /dev/loop0
 }
 
 function qcow_create_legacy() {
@@ -63,7 +87,7 @@ a
 n
 
 
-1050623
+
 
 
 w
@@ -209,6 +233,10 @@ then
 		exit 1
 	fi
 
+	#umount /mnt/boot/
+	#umount /mnt
+	#qemu-nbd -d /dev/nbd0
+	#exit 0
 	tar -pxf ${BASEOS_TAR_IMAGE} -C /mnt
 	for f in proc sys dev ; do mount -o bind /$f /mnt/$f ; done
 
@@ -218,6 +246,8 @@ then
 		if [ $IS_EIF -eq 1 ]
 		then
 			umount /mnt/boot/efi
+		else
+			legacy_grub
 		fi
 		for f in proc sys dev ; do umount /mnt/$f ; done
 		umount /mnt/boot/

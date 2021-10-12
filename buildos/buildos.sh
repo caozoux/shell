@@ -4,6 +4,19 @@ curdir=`pwd`
 myspace=$curdir
 buildos_root=$curdir/buildos
 
+function centos7_set()
+{
+	sed -i "s/enforcing/disabled/"/etc/selinux/config
+}
+
+function passwd_set()
+{
+chroot $buildos_root  passwd << EOF
+123
+123
+EOF
+}
+
 function mini_os()
 {
 	systemctl disable rhel-dmesg
@@ -21,11 +34,13 @@ function centos_env_inst()
 	#grub2 lagcy boot
 	chroot $buildos_root  /bin/yum -y install  grub2-pc grub-common
 
-	chroot $buildos_root /bin/sed 's/SELINUX=enforcing/SELINUX=disabled/'
+	chroot $buildos_root /bin/sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
 
 	chroot $buildos_root /bin/systemctl disbale auditd
-	chroot $buildos_root /bin/systemctl  disable NetworkManager
+	chroot $buildos_root /bin/systemctl disable NetworkManager
 	chroot $buildos_root /bin/systemctl disable postfix
+	cp cfg/ifcfg-eth0    $buildos_root/etc/sysconfig/network-scripts/
+	cp cfg/fstab         $buildos_root/etc/
 }
 
 umount $buildos_root/dev

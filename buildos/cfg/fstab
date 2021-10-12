@@ -1,0 +1,4 @@
+UUID=/dev/vda2  /                       ext4     defaults        0 0
+UUID=/dev/vda1  /boot                   ext2     defaults        0 0
+
+
