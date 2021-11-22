@@ -4,6 +4,16 @@ curdir=`pwd`
 myspace=$curdir
 buildos_root=$curdir/buildos
 
+function dockerimages_ssh()
+{
+	chroot $buildos_root  /usr/bin/yum install -y openssh httpd
+}
+
+function dockerimages_net()
+{
+	chroot $buildos_root  /usr/bin/yum install -y net-tools  bridge-utils ethtool pciutils iptables
+}
+
 function centos7_set()
 {
 	sed -i "s/enforcing/disabled/"/etc/selinux/config
@@ -71,6 +81,8 @@ cp /etc/motd $buildos_root/etc/motd
 mount -o bind /dev $buildos_root/dev
 mount -o bind /proc $buildos_root/proc
 chroot $buildos_root  /bin/yum -y groupinstall "Minimal Install"
+dockerimages_net
+dockerimages_ssh
 centos_env_inst
 chroot $buildos_root  /usr/bin/yum clean all
 umount $buildos_root/dev
