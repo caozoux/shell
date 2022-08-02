@@ -79,27 +79,36 @@ fi
 
 if [ ! $KERNEL_VERSION ]
 then
-	die "KERNEL_VERSION is NULL"		
+	VERSION=`cat $KERNEL_PATH/Makefile | grep "^VERSION =" | awk '{print $3}'`
+	PATCHLEVEL=`cat $KERNEL_PATH/Makefile | grep "^PATCHLEVEL =" | awk '{print $3}'`
+	SUBLEVEL=`cat $KERNEL_PATH/Makefile | grep "^SUBLEVEL =" | awk '{print $3}'`
+	KERNEL_VERSION=${VERSION}.${PATCHLEVEL}.${SUBLEVEL}
+	#die "KERNEL_VERSION is NULL"		
 fi
 
-#if [ ! kerenl ]
-#then
-#	mkdir kernel
-#else
-#	rm -rf kernel
-#	mkdir kernel
-#fi
+if [ ! kerenl ]
+then
+	mkdir kernel
+else
+	rm -rf kernel
+	mkdir kernel
+fi
 
-#tar linux-xxx.tar.gz
+#get linux version
 
-#cp $KERNEL_PATH/* kernel  -rf
+# VERSION=`cat $KERNEL_PATH/Makefile | grep "^VERSION ="`
 
-#tar cf kernel.tar.xz kernel
+cp $KERNEL_PATH/* kernel  -rf
 
-#mv kernel.tar.xz  ${RPMDIR}/SOURCES/
+tar cf kernel.tar.gz kernel
+
+mv kernel.tar.gz  ${RPMDIR}/SOURCES/
 
 #rpmbuild --rebuild  --define '_topdir ${RPMDIR}' --define '_sourcedir %{_topdir}/SOURCES' --define '_specdir %{_topdir}/SPECS' --define '_srcrpmdir %{_topdir}/SRPMS' --define '_rpmdir %{_topdir}/RPMS'   --without check kernel-rt.spec
-rpmbuild --bb  --define '_topdir ${RPMDIR}' --define '_sourcedir %{_topdir}/SOURCES' --define '_specdir %{_topdir}/SPECS' --define '_srcrpmdir %{_topdir}/SRPMS' --define '_rpmdir %{_topdir}/RPMS'   --without check kernel-rt.spec
+rpmbuild -bb   --define "_without_version 1"  --define "kernel_version ${KERNEL_VERSION}" --define "_without_extra 1"  --define "extra_release  .${KERNEL_EXTRA}"  --define "_topdir ${RPMDIR}" --define '_sourcedir %{_topdir}/SOURCES' --define '_specdir %{_topdir}/SPECS' --define '_srcrpmdir %{_topdir}/SRPMS' --define '_rpmdir %{_topdir}/RPMS'   --without check kernel-rt.spec
+
+#rpmbuild --bb  --define "_topdir ${RPMDIR}" --define '_sourcedir %{_topdir}/SOURCES' --define '_specdir %{_topdir}/SPECS' --define '_srcrpmdir %{_topdir}/SRPMS' --define '_rpmdir %{_topdir}/RPMS'   --without check kernel-rt.spec
+
 
 #rpmbuild --rebuild  --define '_topdir ${RPMDIR}' --define '_sourcedir %{_topdir}/SOURCES' --define '_specdir %{_topdir}/SPECS' --define '_srcrpmdir %{_topdir}/SRPMS' --define '_rpmdir %{_topdir}/RPMS'  --define 'dist %{nil}' --target aarch64 --define '_prefix /usr' --define '_exec_prefix /usr' --define '_sysconfdir /etc' --define '_usr /usr' --without check  --define 'dpdk_datadir /opt/mellanox/dpdk/share' --with dpdk --with static /mnt/work/mlnx_rpms/MLNX_OFED_LINUX-5.4-1.0.3.0-rhel7.6alternate-aarch64/src/MLNX_OFED_SRC-5.4-1.0.3.0/SRPMS/openvswitch-2.14.1-1.54103.src.rpm
 
