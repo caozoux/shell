@@ -1,0 +1,1 @@
+qemu-system-x86_64 -enable-kvm -cpu host -smp 2 -m 8192 --nographic  -drive driver=qcow2,media=disk,cache=writeback,if=virtio,id=me_rootfs,file=/home/zc/work/qemu/centosv2.qcow2 -net nic -net tap,ifname=tap0,script=/etc/qemu-ifup -device vfio-pci,host=18:00.0,id=net0   -device vfio-pci,host=65:00.1,id=net1

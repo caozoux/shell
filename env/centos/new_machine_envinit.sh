@@ -28,8 +28,7 @@ function vim_install() {
 }
 
 function gcc10_install() {
-	sudo yum install centos-release-scl
-	sudo yum install devtoolset-10
+	sudo yum install gcc-toolset-gcc10
 	scl enable devtoolset-10 bash
 	#function_body
 }
