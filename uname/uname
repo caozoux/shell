@@ -1,0 +1,12 @@
+#!/bin/bash
+
+KVER=""
+if [ $# -eq 1 ]
+then
+	echo $KVER
+	exit 0
+fi
+
+/usr/bin/uname.old $@
+
+
